@@ -1,55 +1,20 @@
----
+# 🏠 House Price Prediction - Artificial Neural Network (ANN)
 
-## 🧾 Input Features
+![Python](https://img.shields.io/badge/Python-3.11+-blue?style=for-the-badge&logo=python)
+![Flask](https://img.shields.io/badge/Flask-2.3.3-black?style=for-the-badge&logo=flask)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-2.13.0-orange?style=for-the-badge&logo=tensorflow)
+![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.3.0-blue?style=for-the-badge&logo=scikitlearn)
 
-| Feature | Description |
-|---|---|
-| Longitude | Geographic coordinate |
-| Latitude | Geographic coordinate |
-| Housing Median Age | Age of the house (years) |
-| Total Rooms | Total rooms in the block |
-| Total Bedrooms | Total bedrooms in the block |
-| Population | Block population |
-| Households | Number of households |
-| Median Income | Median income (×$10,000) |
-| Ocean Proximity | Distance category to the ocean |
+Aplikasi web untuk memprediksi harga rumah di California menggunakan model **Deep Learning (ANN)**. Proyek ini mengintegrasikan model yang dilatih menggunakan TensorFlow/Keras ke dalam antarmuka web interaktif berbasis Flask.
 
----
-
-## 🌊 Ocean Proximity Categories
-
-| Value | Description |
-|---|---|
-| Near Bay | Close to a bay |
-| < 1H Ocean | Less than 1 hour from the ocean |
-| Inland | Far from the ocean |
-| Near Ocean | Close to the ocean |
-| Island | Located on an island |
-
----
-
-## 🛠️ Tech Stack
-
-- **Backend:** Python, Flask
-- **Model:** TensorFlow 2.15 / Keras (ANN)
-- **Preprocessing:** Scikit-learn (MinMaxScaler)
-- **Frontend:** HTML, CSS, Vanilla JavaScript
-- **Dataset:** California Housing Dataset
-
----
-
-## 📊 Sample Input
-
-| Field | Value |
-|---|---|
-| Longitude | -122.23 |
-| Latitude | 37.88 |
-| Ocean Proximity | Near Bay |
-| House Age | 41 years |
-| Total Rooms | 880 |
-| Total Bedrooms | 129 |
-| Population | 322 |
-| Households | 126 |
-| Median Income | 8.33 |
-
----
+## 📁 Struktur Folder
+```text
+house_price_app/
+├── venv/               # Virtual Environment
+├── templates/          # Folder file HTML
+│   └── index.html      # Tampilan Utama (UI)
+├── app.py              # Backend Flask (Route & Model Loader)
+├── model_ann.h5        # Model ANN yang sudah dilatih (Trained Model)
+├── scaler.pkl          # Pre-trained Scaler (MinMaxScaler)
+├── requirements.txt    # Daftar library pendukung
+└── README.md           # Dokumentasi proyek
