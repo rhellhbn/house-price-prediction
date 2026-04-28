@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>House Price Prediction - ANN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F7F6F3;
+      --surface: #FFFFFF;
+      --border: #E2DFD8;
+      --text: #1A1917;
+      --muted: #6B6862;
+      --accent: #1A5CFF;
+      --accent-light: #EEF3FF;
+      --success: #1A7A4A;
+      --success-light: #E8F7EE;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .header .badge {
+      display: inline-block;
+      background: var(--accent-light);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .header p {
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    /* Progress Steps */
+    .steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 2rem;
+    }
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      padding: 8px 16px;
+      border-radius: 999px;
+      transition: all 0.2s;
+    }
+    .step-item.active { color: var(--accent); background: var(--accent-light); }
+    .step-item.done   { color: var(--success); }
+    .step-circle {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #E2DFD8;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; color: var(--muted);
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .step-item.active .step-circle { background: var(--accent); color: white; }
+    .step-item.done .step-circle   { background: var(--success); color: white; }
+    .step-arrow { color: #C8C5BF; font-size: 12px; padding: 0 4px; }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      margin-bottom: 1rem;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .card-icon {
+      width: 36px; height: 36px;
+      background: var(--accent-light);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .card-icon svg { width: 18px; height: 18px; }
+    .card-title { font-size: 15px; font-weight: 600; }
+    .card-sub   { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* Form Grid */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    .field input, .field select {
+      height: 42px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field input:focus, .field select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(26,92,255,0.1);
+      background: white;
+    }
+    .field input::placeholder { color: #B8B5AF; }
+
+    /* Info hint */
+    .hint {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: #FEFCE8;
+      border: 1px solid #FDE68A;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #78350F;
+      margin-bottom: 1rem;
+    }
+    .hint-dot { width: 8px; height: 8px; border-radius: 50%; background: #F59E0B; flex-shrink: 0; margin-top: 3px; }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 10px; }
+    .btn {
+      height: 42px;
+      padding: 0 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .btn:hover { background: var(--bg); }
+    .btn:active { transform: scale(0.98); }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      margin-left: auto;
+    }
+    .btn.primary:hover { background: #1348CC; }
+    .btn.primary:disabled { background: #B8C5F0; border-color: #B8C5F0; cursor: not-allowed; }
+
+    /* Result */
+    .result-box {
+      background: var(--success-light);
+      border: 1px solid #86EFAC;
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .result-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--success); margin-bottom: 8px; }
+    .result-price { font-size: 42px; font-weight: 600; color: #14532D; letter-spacing: -0.03em; margin-bottom: 6px; }
+    .result-note  { font-size: 13px; color: var(--success); }
+    .result-tags  { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+    .tag {
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .tag.blue   { background: var(--accent-light); color: var(--accent); }
+    .tag.orange { background: #FFF7ED; color: #9A3412; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .metric-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 4px; }
+    .metric-val   { font-size: 20px; font-weight: 600; }
+
+    .error-box {
+      background: #FFF1F2;
+      border: 1px solid #FECDD3;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #9F1239;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .loading { opacity: 0.6; pointer-events: none; }
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hidden { display: none; }
+
+    @media (max-width: 500px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="badge">ANN Model</div>
+    <h1>House Price Prediction</h1>
+    <p>Prediksi harga rumah California menggunakan Artificial Neural Network</p>
+  </div>
+
+  <!-- Progress Steps -->
+  <div class="steps">
+    <div class="step-item active" id="step-1"><div class="step-circle">1</div> Lokasi</div>
+    <div class="step-arrow">›</div>
+    <div class="step-item" id="step-2"><div class="step-circle">2</div> Rumah</div>
+    <div class="step-arrow">›</div>
+    <div class="step-item" id="step-3"><div class="step-circle">3</div> Ekonomi</div>
+    <div class="step-arrow">›</div>
+    <div class="step-item" id="step-4"><div class="step-circle">4</div> Hasil</div>
+  </div>
+
+  <!-- Error Box -->
+  <div class="error-box" id="error-box"></div>
+
+  <!-- SECTION 1: Lokasi -->
+  <div id="sec-1">
+    <div class="hint">
+      <div class="hint-dot"></div>
+      Data untuk wilayah California, USA. Longitude sekitar -124 s/d -114, Latitude sekitar 32 s/d 42.
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1A5CFF" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Data Lokasi</div>
+          <div class="card-sub">Koordinat dan jarak ke laut</div>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-bottom:14px">
+        <div class="field">
+          <label>Longitude</label>
+          <input type="number" id="longitude" placeholder="-122.23" step="0.01">
+        </div>
+        <div class="field">
+          <label>Latitude</label>
+          <input type="number" id="latitude" placeholder="37.88" step="0.01">
+        </div>
+      </div>
+      <div class="field">
+        <label>Ocean Proximity (Kedekatan ke Laut)</label>
+        <select id="oceanproximity">
+          <option value="">-- Pilih lokasi --</option>
+          <option value="0">Near Bay (Dekat Teluk)</option>
+          <option value="1">Less than 1H Ocean (Kurang dari 1 jam ke laut)</option>
+          <option value="2">Inland (Pedalaman / jauh dari laut)</option>
+          <option value="3">Near Ocean (Dekat Laut)</option>
+          <option value="4">Island (Pulau)</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="goStep(2)">Selanjutnya →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Detail Rumah -->
+  <div id="sec-2" class="hidden">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1A5CFF" stroke-width="2" stroke-linecap="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Detail Rumah</div>
+          <div class="card-sub">Usia dan jumlah kamar</div>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Usia Rumah (tahun)</label>
+          <input type="number" id="houseage" placeholder="41" min="1" max="100">
+        </div>
+        <div class="field">
+          <label>Total Kamar</label>
+          <input type="number" id="houserooms" placeholder="880" min="1">
+        </div>
+        <div class="field">
+          <label>Total Kamar Tidur</label>
+          <input type="number" id="totlabedrooms" placeholder="129" min="1">
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="goStep(1)">← Kembali</button>
+      <button class="btn primary" onclick="goStep(3)">Selanjutnya →</button>
+    </div>
+  </div>
+
+  <!-- SECTION 3: Populasi & Ekonomi -->
+  <div id="sec-3" class="hidden">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1A5CFF" stroke-width="2" stroke-linecap="round">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Populasi & Ekonomi</div>
+          <div class="card-sub">Data demografis dan pendapatan</div>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Populasi</label>
+          <input type="number" id="population" placeholder="322" min="1">
+        </div>
+        <div class="field">
+          <label>Rumah Tangga</label>
+          <input type="number" id="households" placeholder="126" min="1">
+        </div>
+        <div class="field">
+          <label>Median Income (×$10K)</label>
+          <input type="number" id="medianincome" placeholder="8.33" step="0.01" min="0">
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="goStep(2)">← Kembali</button>
+      <button class="btn primary" id="predict-btn" onclick="predict()">Prediksi Harga</button>
+    </div>
+  </div>
+
+  <!-- SECTION 4: Hasil -->
+  <div id="sec-4" class="hidden">
+    <div class="result-box">
+      <div class="result-label">Estimasi Harga Rumah</div>
+      <div class="result-price" id="result-price">-</div>
+      <div class="result-note">Prediksi dari model ANN yang telah dilatih</div>
+      <div class="result-tags">
+        <span class="tag blue" id="tag-ocean">-</span>
+        <span class="tag orange" id="tag-income">-</span>
+      </div>
+    </div>
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Usia Rumah</div>
+        <div class="metric-val" id="m-age">-</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Total Kamar</div>
+        <div class="metric-val" id="m-rooms">-</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Median Income</div>
+        <div class="metric-val" id="m-income">-</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="resetForm()">← Hitung Ulang</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const sections = [1,2,3,4];
+  const oceanNames = ['Near Bay','< 1H Ocean','Inland','Near Ocean','Island'];
+
+  function goStep(n) {
+    sections.forEach(i => {
+      document.getElementById('sec-'+i).classList.toggle('hidden', i !== n);
+      const s = document.getElementById('step-'+i);
+      s.classList.remove('active','done');
+      if (i < n) s.classList.add('done');
+      else if (i === n) s.classList.add('active');
+    });
+    document.getElementById('error-box').style.display = 'none';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-box');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  async function predict() {
+    const btn = document.getElementById('predict-btn');
+    const payload = {
+      longitude:      document.getElementById('longitude').value,
+      latitude:       document.getElementById('latitude').value,
+      houseage:       document.getElementById('houseage').value,
+      houserooms:     document.getElementById('houserooms').value,
+      totlabedrooms:  document.getElementById('totlabedrooms').value,
+      population:     document.getElementById('population').value,
+      households:     document.getElementById('households').value,
+      medianincome:   document.getElementById('medianincome').value,
+      oceanproximity: document.getElementById('oceanproximity').value,
+    };
+
+    for (const [k, v] of Object.entries(payload)) {
+      if (!v) { showError('Lengkapi semua field sebelum memprediksi.'); return; }
+    }
+
+    btn.innerHTML = '<span class="spinner"></span> Memproses...';
+    btn.disabled = true;
+
+    try {
+      const res  = await fetch('/predict', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (!data.success) throw new Error(data.error || 'Terjadi kesalahan pada server.');
+
+      const price = data.price;
+      document.getElementById('result-price').textContent = '$' + price.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+      document.getElementById('tag-ocean').textContent = oceanNames[parseInt(payload.oceanproximity)];
+      document.getElementById('tag-income').textContent = 'Income ×$' + parseFloat(payload.medianincome).toFixed(2) + 'K';
+      document.getElementById('m-age').textContent = payload.houseage + ' th';
+      document.getElementById('m-rooms').textContent = parseInt(payload.houserooms).toLocaleString();
+      document.getElementById('m-income').textContent = '$' + (parseFloat(payload.medianincome)*10000).toLocaleString('en-US',{maximumFractionDigits:0});
+      goStep(4);
+
+    } catch(e) {
+      showError('Error: ' + e.message);
+    } finally {
+      btn.innerHTML = 'Prediksi Harga';
+      btn.disabled = false;
+    }
+  }
+
+  function resetForm() {
+    document.querySelectorAll('input').forEach(i => i.value = '');
+    document.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+    goStep(1);
+  }
+</script>
+</body>
+</html>
